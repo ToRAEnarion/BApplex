@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/videos">
+        <file alias="video">myvid.mp4</file>
+    </qresource>
+</RCC>

@@ -9,6 +9,7 @@ BQrCodeDialog::BQrCodeDialog(QWidget *parent) : QDialog (parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(w);
     setLayout(layout);
+    setGeometry(0,0,400,400);
 }
 
 QString BQrCodeDialog::foundText()

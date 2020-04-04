@@ -1,0 +1,44 @@
+#include "btimerangeselectwidget.h"
+#include <QPainter>
+#include <QRadialGradient>
+#include <QtMath>
+
+BTimeRangeSelectWidget::BTimeRangeSelectWidget(QWidget* parent) : QWidget(parent)
+{
+    Color = Qt::red;
+}
+
+void BTimeRangeSelectWidget::paintEvent(QPaintEvent *event)
+{
+    QWidget::paintEvent(event);
+    qreal min;
+    qreal xOffset = 0;
+    qreal yOffset = 0;
+    if(width()>height())
+    {
+        min = height();
+        xOffset = (width() - height())/2;
+    }
+    else
+    {
+        min = width();
+        yOffset = (height() - width())/2;
+    }
+
+    QPointF ctr(0.5*this->width(),0.5*this->height());
+    QRectF rcF(xOffset + 0.1*min, yOffset + 0.1*min, 0.8*min, 0.8*min);
+
+    QPainter p(this);
+    QRadialGradient grad(rcF.center(), 0.4*min);
+    grad.setColorAt(0.85, Color.darker(120));
+    grad.setColorAt(0.92, Color.darker(90));
+    grad.setColorAt(1, Color.darker(120));
+    p.setBrush(QBrush(grad));
+    p.drawEllipse(rcF);
+
+    p.setBrush(QBrush(Qt::white));
+    p.drawEllipse(xOffset + 0.15*min, yOffset + 0.15*min, 0.7*min, 0.7*min);
+
+    p.setPen(QPen(Qt::black, 2));
+
+}

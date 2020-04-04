@@ -6,25 +6,51 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>584</width>
+    <height>345</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="iconSize">
+   <size>
+    <width>48</width>
+    <height>48</height>
+   </size>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QLabel" name="label">
-      <property name="font">
-       <font>
-        <pointsize>25</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
+     <widget class="BTreeConnectedWidget" name="componentTreeView">
+      <column>
+       <property name="text">
+        <string>Élément</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Statut</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>   Ip     </string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Adresse Physique</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>...</string>
+       </property>
+      </column>
      </widget>
     </item>
    </layout>
@@ -34,23 +60,45 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>400</width>
-     <height>21</height>
+     <width>584</width>
+     <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFichier">
-    <property name="title">
-     <string>Fichier</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menuComposants">
     <property name="title">
      <string>Composants</string>
     </property>
+    <property name="icon">
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/component</normaloff>:/icons/component</iconset>
+    </property>
     <addaction name="actionAddComponent"/>
+    <addaction name="actionAddIp"/>
    </widget>
-   <addaction name="menuFichier"/>
+   <widget class="QMenu" name="menuDEBUG">
+    <property name="title">
+     <string>DEBUG</string>
+    </property>
+    <property name="icon">
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/BUG</normaloff>:/icons/BUG</iconset>
+    </property>
+    <addaction name="actionGenerer_QrCode"/>
+    <addaction name="actionScanNetwork"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>ll</string>
+    </property>
+    <property name="icon">
+     <iconset resource="resources.qrc">
+      <normaloff>:/icons/settings</normaloff>:/icons/settings</iconset>
+    </property>
+    <addaction name="actionWifi_local"/>
+   </widget>
+   <addaction name="menuSettings"/>
    <addaction name="menuComposants"/>
+   <addaction name="menuDEBUG"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -66,8 +114,37 @@
     <string>Ajouter...</string>
    </property>
   </action>
+  <action name="actionGenerer_QrCode">
+   <property name="text">
+    <string>Generer QrCode</string>
+   </property>
+  </action>
+  <action name="actionWifi_local">
+   <property name="text">
+    <string>Wifi local</string>
+   </property>
+  </action>
+  <action name="actionScanNetwork">
+   <property name="text">
+    <string>Scanner réseaux</string>
+   </property>
+  </action>
+  <action name="actionAddIp">
+   <property name="text">
+    <string>Ajouter Ip...</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>BTreeConnectedWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>btreeconnectedwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

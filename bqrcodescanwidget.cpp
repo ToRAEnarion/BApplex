@@ -11,8 +11,9 @@
 BQrCodeScanWidget::BQrCodeScanWidget(QWidget *parent) : QCameraViewfinder (parent), Camera(nullptr), LastTag("")
 {
     const QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    qDebug()<<"Camera number"<<cameras.size();
-    for (const QCameraInfo &cameraInfo : cameras) {
+
+    for (const QCameraInfo &cameraInfo : cameras)
+    {
 
         qDebug()<<"init "<<cameraInfo.deviceName();
         Camera = new QCamera(cameraInfo, this);
@@ -29,8 +30,6 @@ BQrCodeScanWidget::BQrCodeScanWidget(QWidget *parent) : QCameraViewfinder (paren
         Camera->start();
         break;
     }
-
-    qDebug()<<"error : "<<Camera->errorString()<<Camera->isAvailable()<<Camera->notifyInterval();
 }
 
 void BQrCodeScanWidget::paintEvent(QPaintEvent *event)

@@ -26,18 +26,39 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-    bnetworkmanager.cpp \
+    baddbyipdialog.cpp \
+    bconnecteditem.cpp \
+    bconnectedtreeitem.cpp \
+    bitemrequestmanager.cpp \
     bqrcodedialog.cpp \
-        mainwindow.cpp \
+    bqrcodemakerdialog.cpp \
+    btreeconnectedwidget.cpp \
+    mainwindow.cpp \
     bqrcodescanwidget.cpp \
-    bqrcodeprobe.cpp
+    bqrcodeprobe.cpp \
+    settingsdialog.cpp \
+    treemultibutton.cpp \
+    widgets/btimerangeselectwidget.cpp
 
 HEADERS  += mainwindow.h \
-    bnetworkmanager.h \
+    baddbyipdialog.h \
+    bconnecteditem.h \
+    bconnectedtreeitem.h \
+    bitemrequestmanager.h \
     bqrcodedialog.h \
+    bqrcodemakerdialog.h \
     bqrcodescanwidget.h \
-    bqrcodeprobe.h
+    bqrcodeprobe.h \
+    btreeconnectedwidget.h \
+    settingsdialog.h \
+    struct.h \
+    treemultibutton.h \
+    widgets/btimerangeselectwidget.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    baddbyipdialog.ui \
+    bqrcodemakerdialog.ui \
+    settingsdialog.ui
 
-RESOURCES +=
+RESOURCES += \
+    resources.qrc

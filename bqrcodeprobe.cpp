@@ -4,7 +4,7 @@
 
 BQrCodeProbe::BQrCodeProbe(QObject *object) : QVideoProbe(object), Thread(this), IsDecoding(false)
 {    
-    Engine = new QZXing(object);
+    Engine = new QZXing();
     Engine->moveToThread(&Thread);
     connect(&Thread, SIGNAL(finished()), Engine, SLOT(deleteLater()));
     connect(this, SIGNAL(videoFrameProbed(QVideoFrame)), this, SLOT(processFrame(QVideoFrame)));

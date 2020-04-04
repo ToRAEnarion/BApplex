@@ -4,7 +4,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkConfigurationManager>
 #include <QNetworkConfiguration>
-
+/*
 class BNetworkManager : public QNetworkAccessManager
 {
     Q_OBJECT
@@ -15,5 +15,5 @@ private:
     QNetworkConfigurationManager Manager;
     QMap<QString, QString> PassWordList;
 };
-
+*/
 #endif // BNETWORKMANAGER_H

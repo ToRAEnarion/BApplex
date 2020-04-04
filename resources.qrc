@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="BUG">resources/bug_red.png</file>
+        <file alias="component">resources/component.png</file>
+        <file alias="settings">resources/settings.png</file>
+        <file alias="wifi">resources/wifiCircle.png</file>
+        <file alias="qrcode">resources/qrcode.png</file>
+        <file alias="loadWifi">resources/includeWifi.png</file>
+        <file alias="automatic">resources/automatic.png</file>
+        <file alias="delete">resources/delete.png</file>
+    </qresource>
+    <qresource prefix="/components">
+        <file alias="ESP">resources/ESP8266.png</file>
+        <file alias="unknown">resources/unknown.png</file>
+    </qresource>
+</RCC>

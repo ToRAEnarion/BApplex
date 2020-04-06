@@ -45,7 +45,7 @@ private:
     QNetworkConfigurationManager ConfigManager;
     BItemRequestManager* RequestManager;
     QString CurrentElementRegistration;
-    QMap<QString, BConnectedItem*> ElementsRegistered;
+    QList<BConnectedItem*> ElementsRegistered;
     QSettings Settings;
 };
 

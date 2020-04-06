@@ -1,6 +1,6 @@
 #include "bconnecteditem.h"
 
-BConnectedItem::BConnectedItem(const QString &name) : Name(name)
+BConnectedItem::BConnectedItem(const QString &name) : Name(name), Description("")
 {
 
 }
@@ -61,9 +61,19 @@ BConnectedItem *BConnectedItem::make(const QHostAddress &adresse)
      return item;
 }
 
+void BConnectedItem::setDescription(const QString &value)
+{
+    Description = value == Name ? "" : value;
+}
+
 QString BConnectedItem::type() const
 {
     return Type;
+}
+
+QString BConnectedItem::description() const
+{
+    return Description;
 }
 
 void BConnectedItem::setType(const QString &value)

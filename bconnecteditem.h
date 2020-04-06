@@ -25,6 +25,8 @@ public:
     QString mac() const;    
     QString type() const;
 
+    QString description() const;
+
     QHostAddress ip() const;
 
     QSet<BConnectedItem::ActionType> getActions();
@@ -33,6 +35,8 @@ public:
     void setMAC(const QString &value);
     void setIp(const QHostAddress &value);    
     void setType(const QString &value);
+
+    void setDescription(const QString &value);
 public:
     static BConnectedItem* make(const QHostAddress& adresse);
 
@@ -43,6 +47,8 @@ private:
     QString SSID;
     QString Password;
     QString MAC;
+
+    QString Description;
 };
 
 #endif // BCONNECTEDITEM_H

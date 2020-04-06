@@ -13,6 +13,8 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+
+    QString toString(int i);
 private:
     QRectF makeRect(int val);
 
@@ -20,6 +22,7 @@ private:
     int Start1;
     int End1;
 
+    int Flashing;
     int CurrentDrag;
     QPointF Center;
     qreal Radius;

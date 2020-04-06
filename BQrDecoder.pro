@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets network multimedia multimediawidgets
 
-include(QZXing\QZXing.pri)
+include(QZXing/QZXing.pri)
 
 TARGET = BQrDecoder
 TEMPLATE = app
@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     bqrcodeprobe.cpp \
     settingsdialog.cpp \
     treemultibutton.cpp \
-    widgets/btimerangeselectwidget.cpp
+    widgets/btimerangeselectwidget.cpp \
+    widgets/btimeselecterwidget.cpp
 
 HEADERS  += mainwindow.h \
     baddbyipdialog.h \
@@ -53,12 +54,14 @@ HEADERS  += mainwindow.h \
     settingsdialog.h \
     struct.h \
     treemultibutton.h \
-    widgets/btimerangeselectwidget.h
+    widgets/btimerangeselectwidget.h \
+    widgets/btimeselecterwidget.h
 
 FORMS    += mainwindow.ui \
     baddbyipdialog.ui \
     bqrcodemakerdialog.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    widgets/btimeselecterwidget.ui
 
 RESOURCES += \
     resources.qrc

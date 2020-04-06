@@ -63,22 +63,21 @@ void BItemRequestManager::onCommandReadyRead()
         QByteArray res = Process->readAllStandardOutput();
         QList<QByteArray> lines = res.split('\n');
 
+        QRegExp regMac("([0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2})");
         for(int i=0;i<lines.size();i++)
         {
             qDebug()<<lines[i];
             QString workLine = QString(lines[i]);
             workLine = workLine.remove(" ");
-            if(workLine.startsWith(Item->ip().toString().toLatin1()))
+            if(workLine.contains(Item->ip().toString().toLatin1()))
             {
-                workLine = workLine.remove(Item->ip().toString());
-                workLine = workLine.left(17);
-                if(workLine.size() == 17)
+                if(regMac.indexIn(workLine)>=0)
                 {
-                    Item->setMAC(workLine);
+                    Item->setMAC(regMac.cap(1));
+                    CmdState = ProcessState::None;
                     break;
                 }
 
-                CmdState = ProcessState::None;
             }
         }
     }

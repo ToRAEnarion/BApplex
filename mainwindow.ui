@@ -26,6 +26,9 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="BTreeConnectedWidget" name="componentTreeView">
+      <property name="editTriggers">
+       <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::EditKeyPressed</set>
+      </property>
       <column>
        <property name="text">
         <string>Élément</string>

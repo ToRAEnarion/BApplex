@@ -12,12 +12,25 @@ void BConnectedTreeItem::initializeNode(BTreeConnectedWidget *tree)
     Buttons = new TreePushButton(this);
     QObject::connect(Buttons, SIGNAL(actionItem(BConnectedItem*, BConnectedItem::ActionType)), tree, SIGNAL(actionItem(BConnectedItem*, BConnectedItem::ActionType)));
     tree->setItemWidget(this, 4, Buttons);
+    setFlags(flags() | Qt::ItemIsEditable);
     updateNode();
 }
 
 void BConnectedTreeItem::updateNode()
 {
-    setText(0, Item->name());
+    QFont f = font(1);
+    if(Item->description() != "")
+    {
+        setText(0, Item->description());
+        f.setItalic(true);
+        setFont(0, f);
+    }
+    else
+    {
+        setText(0, Item->name());
+        f.setItalic(false);
+        setFont(0, f);
+    }
     setText(1, "0x0");
     setText(2, Item->ip().toString());
     setText(3, Item->mac());

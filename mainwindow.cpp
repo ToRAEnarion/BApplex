@@ -20,6 +20,7 @@
 #include "baddbyipdialog.h"
 
 #include "widgets/btimerangeselectwidget.h"
+#include "widgets/btimeselecterwidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ConfigManager.updateConfigurations();
 
-    BTimeRangeSelectWidget* w = new BTimeRangeSelectWidget();
+    BTimeSelecterWidget* w = new BTimeSelecterWidget();
     w->show();
 
     connect(&ConfigManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(onNetworkConfigurationChanged(const QNetworkConfiguration&)));
@@ -76,7 +77,7 @@ int MainWindow::getLocalType() const
 
 bool MainWindow::tryRegisterElement(const QString &name)
 {
-    if(ElementsRegistered.contains(name))
+    //if(ElementsRegistered.contains(name))
     {
   /*      CurrentElementRegistration = name;
 
@@ -125,9 +126,10 @@ void MainWindow::on_actionAddComponent_triggered()
     {
     //    ui->label->setText(d.foundText());
         NetworkRegistration res = d.foundSSID();
-        ElementsRegistered.insert(res.SSID, new BConnectedItem(res.SSID, res));
+        BConnectedItem* item = new BConnectedItem(res.SSID, res);
+        ElementsRegistered.append(item);
 
-        RequestManager->updateFromItemId(ElementsRegistered[res.SSID]);
+        RequestManager->updateFromItemId(item);
 
         updateComponentsView();
     }
@@ -141,7 +143,7 @@ void MainWindow::on_actionAddIp_triggered()
         QHostAddress ip = d.ip();
         BConnectedItem* item = BConnectedItem::make(ip);
         CurrentElementRegistration = "TEMP_"+ElementsRegistered.count();
-        ElementsRegistered.insert(CurrentElementRegistration, item);
+        ElementsRegistered.append(item);
 
         RequestManager->updateFromItemId(item);
         qDebug()<<"iso : "<<"http://"+ip.toString()+"/id";
@@ -184,7 +186,7 @@ void MainWindow::onTreeActionPressed(BConnectedItem *item, BConnectedItem::Actio
             RequestManager->loadLocalWifi(item, this);
             break;
         case BConnectedItem::Delete:
-            if(ElementsRegistered.remove(item->name()))
+            if(ElementsRegistered.removeOne(item))
                 delete item;
 
             updateComponentsView();
@@ -196,7 +198,7 @@ void MainWindow::onTreeActionPressed(BConnectedItem *item, BConnectedItem::Actio
 void MainWindow::onNetworkConfigurationChanged(const QNetworkConfiguration &config)
 {
     qDebug()<<"config changed :"<<config.name()<<" : "<<config.state();
-    if(ElementsRegistered.contains(config.name()) && ((config.state() & QNetworkConfiguration::Active)!=0))
+ //   if(ElementsRegistered.contains(config.name()) && ((config.state() & QNetworkConfiguration::Active)!=0))
     {
         tryRegisterElement(config.name());
     }

@@ -11,6 +11,9 @@
 #include "bconnectedtreeitem.h"
 #include "bitemrequestmanager.h"
 
+
+typedef bool (*UpdateMethod)(BConnectedItem*);
+
 namespace Ui {
 class MainWindow;
 }
@@ -26,6 +29,8 @@ public:
     QString getLocalSSID() const;
     QString getLocalPassWord() const;
     int getLocalType() const;
+
+    void addUpdateMethod(const QString& str, UpdateMethod method);
 
     bool tryRegisterElement(const QString &name);
 
@@ -47,6 +52,8 @@ private:
     QString CurrentElementRegistration;
     QList<BConnectedItem*> ElementsRegistered;
     QSettings Settings;
+
+    QMap<QString, UpdateMethod> UpdateMethods;
 };
 
 #endif // MAINWINDOW_H

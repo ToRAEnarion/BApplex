@@ -47,6 +47,11 @@ QString BTimeSelecterWidget::stringValue()
     return "";
 }
 
+void BTimeSelecterWidget::updateMethod(BConnectedItem *item)
+{
+
+}
+
 void BTimeSelecterWidget::on_modeComboBox_currentIndexChanged(int i)
 {
     updateVisibility();

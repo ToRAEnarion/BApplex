@@ -53,6 +53,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::addUpdateMethod(const QString& str, UpdateMethod method)
+{
+    UpdateMethods.insert(str, method);
+}
+
 void MainWindow::setLocalSSID(const QString &ssid, const QString &passWord, int t)
 {
     Settings.setValue("NET_SSID", ssid);

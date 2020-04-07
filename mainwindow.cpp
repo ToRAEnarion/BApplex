@@ -20,7 +20,7 @@
 #include "baddbyipdialog.h"
 
 #include "widgets/btimerangeselectwidget.h"
-#include "widgets/btimeselecterwidget.h"
+#include "widgets/bespstatesdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,8 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ConfigManager.updateConfigurations();
 
-    BTimeSelecterWidget* w = new BTimeSelecterWidget();
-    w->show();
+    BApplex::addMethod("ESP", &BEspStatesDialog::editMethod);
 
     connect(&ConfigManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)), this, SLOT(onNetworkConfigurationChanged(const QNetworkConfiguration&)));
     connect(ui->componentTreeView, SIGNAL(actionItem(BConnectedItem*, BConnectedItem::ActionType)), this, SLOT(onTreeActionPressed(BConnectedItem*, BConnectedItem::ActionType)));
@@ -56,7 +55,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::addUpdateMethod(const QString& str, UpdateMethod method)
 {
-    UpdateMethods.insert(str, method);
+    BApplex::addMethod(str, method);
 }
 
 void MainWindow::setLocalSSID(const QString &ssid, const QString &passWord, int t)
@@ -194,6 +193,22 @@ void MainWindow::onTreeActionPressed(BConnectedItem *item, BConnectedItem::Actio
         case BConnectedItem::Delete:
             if(ElementsRegistered.removeOne(item))
                 delete item;
+
+            updateComponentsView();
+            break;
+        case BConnectedItem::Edit:
+            qDebug()<<"edit"<<item->type();
+            if(BApplex::has(item->type()))
+            {
+                if(BApplex::invoke(item->type(), item, this))
+                {
+                    QString url = BApplex::url();
+                    if(url != "")
+                    {
+                        RequestManager->sendRequest(item, url);
+                    }
+                }
+            }
 
             updateComponentsView();
             break;

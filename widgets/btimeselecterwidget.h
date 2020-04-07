@@ -18,7 +18,7 @@ public:
     void updateVisibility();
     QString stringValue();
 
-    static void updateMethod(BConnectedItem* item);
+    static bool updateMethod(BConnectedItem* item);
 protected slots:
     void on_modeComboBox_currentIndexChanged(int i);
     void on_doubleIntervalButton_toggled(bool b);

@@ -10,9 +10,7 @@
 #include <QProcess>
 #include "bconnectedtreeitem.h"
 #include "bitemrequestmanager.h"
-
-
-typedef bool (*UpdateMethod)(BConnectedItem*);
+#include "bapplex.h"
 
 namespace Ui {
 class MainWindow;
@@ -52,8 +50,6 @@ private:
     QString CurrentElementRegistration;
     QList<BConnectedItem*> ElementsRegistered;
     QSettings Settings;
-
-    QMap<QString, UpdateMethod> UpdateMethods;
 };
 
 #endif // MAINWINDOW_H

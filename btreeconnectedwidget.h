@@ -32,6 +32,8 @@ class BTreeConnectedWidget : public QTreeWidget
     Q_OBJECT
 public:
     BTreeConnectedWidget(QWidget* parent = nullptr);
+private slots:
+    void onItemDoubleClicled(QTreeWidgetItem *item, int column);
 signals:
     void actionItem(BConnectedItem*, BConnectedItem::ActionType);
 };

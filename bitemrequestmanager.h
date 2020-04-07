@@ -29,6 +29,8 @@ public:
 
     void updateAvailableAdresses();
     void loadLocalWifi(BConnectedItem* item, INetworkRegistration *registration);
+
+    void sendRequest(BConnectedItem *item, const QString& partialUrl);
 private slots:
     void lookedUpHost(QHostInfo info);
     void onCommandReadyRead();

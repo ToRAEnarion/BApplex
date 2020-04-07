@@ -47,7 +47,7 @@ QString BTimeSelecterWidget::stringValue()
     return "";
 }
 
-void BTimeSelecterWidget::updateMethod(BConnectedItem *item)
+bool BTimeSelecterWidget::updateMethod(BConnectedItem *item)
 {
 
 }

@@ -30,6 +30,12 @@ void BItemRequestManager::loadLocalWifi(BConnectedItem *item, INetworkRegistrati
     NetworkManager.get(request);
 }
 
+void BItemRequestManager::sendRequest(BConnectedItem *item, const QString &partialUrl)
+{
+    QNetworkRequest request(QUrl("http://"+item->ip().toString()+"/"+partialUrl));
+    NetworkManager.get(request);
+}
+
 void BItemRequestManager::updateFromItemId(BConnectedItem *item)
 {
     qDebug()<<"requestID";

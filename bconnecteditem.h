@@ -12,6 +12,7 @@ public:
     {
         Unkown = 0,
         Delete = 1,
+        Edit = 2,
         LoadLocalWifi = 10
     };
 

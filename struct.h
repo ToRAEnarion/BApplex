@@ -2,9 +2,13 @@
 #define STRUCT_H
 
 #include <QString>
+#include <QMap>
 #include <QNetworkConfiguration>
 
+
 #define DEFAULT_AP_IP "192.168.4.10"
+
+
 
 struct ElementRegistration
 {

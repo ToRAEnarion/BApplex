@@ -48,5 +48,11 @@ void TreePushButton::onActionTriggrered()
 
 BTreeConnectedWidget::BTreeConnectedWidget(QWidget *parent) : QTreeWidget(parent)
 {
+    connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int )), this, SLOT(onItemDoubleClicled(QTreeWidgetItem *, int)));
+}
+
+void BTreeConnectedWidget::onItemDoubleClicled(QTreeWidgetItem *item, int column)
+{
+    emit actionItem(((BConnectedTreeItem*)item)->item(), BConnectedItem::Edit);
 }
 

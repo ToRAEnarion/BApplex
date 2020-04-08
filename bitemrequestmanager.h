@@ -16,7 +16,15 @@ enum ProcessState
     ProcessArpA = 2,
 
     NetworkGetId = 10,
-    LoadLocalWifi = 11
+    LoadLocalWifi = 11,
+    GetValue = 12
+};
+
+class Request : public QMap<QString, QVariant>
+{
+public:
+    BConnectedItem* Item;
+    ProcessState State;
 };
 
 class BItemRequestManager : public QObject
@@ -27,8 +35,14 @@ public:
 
     void updateFromItemId(BConnectedItem* item);
 
+    void append(BConnectedItem* item, ProcessState state);
+    void eval();
+    void finish(bool updateItem = false);
+
     void updateAvailableAdresses();
     void loadLocalWifi(BConnectedItem* item, INetworkRegistration *registration);
+
+    void getValue(BConnectedItem* item);
 
     void sendRequest(BConnectedItem *item, const QString& partialUrl);
 private slots:
@@ -40,12 +54,15 @@ private slots:
 signals:
     void itemUpdated(BConnectedItem*);
 private:
+    ProcessState cmdState();
+
     QNetworkAccessManager NetworkManager;
     QProcess* Process;
     QMap<QString, QHostAddress> AvailableLocalAdresses;
     QMutex Mutex;
-    ProcessState CmdState;
-    BConnectedItem* Item;
+
+    int CurrentRequest;
+    QList<Request> Requests;
 };
 
 

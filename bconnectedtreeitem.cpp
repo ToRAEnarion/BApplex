@@ -31,7 +31,7 @@ void BConnectedTreeItem::updateNode()
         f.setItalic(false);
         setFont(0, f);
     }
-    setText(1, "0x0");
+    setText(1, QString("(%1)").arg(Item->valuesCount()));
     setText(2, Item->ip().toString());
     setText(3, Item->mac());
 

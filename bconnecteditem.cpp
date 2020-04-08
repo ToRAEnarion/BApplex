@@ -66,6 +66,24 @@ void BConnectedItem::setDescription(const QString &value)
     Description = value == Name ? "" : value;
 }
 
+void BConnectedItem::setValue(const QString &key, const QVariant &value)
+{
+    Values[key] = value;
+}
+
+QVariant BConnectedItem::operator[](const QString &key)
+{
+    if(Values.contains(key))
+        return Values[key];
+
+    return QVariant();
+}
+
+int BConnectedItem::valuesCount() const
+{
+    return Values.count();
+}
+
 QString BConnectedItem::type() const
 {
     return Type;

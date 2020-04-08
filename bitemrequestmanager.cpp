@@ -1,5 +1,7 @@
 #include "bitemrequestmanager.h"
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QTimer>
 
 
@@ -8,6 +10,7 @@ BItemRequestManager::BItemRequestManager(QObject* parent) : QObject(parent),
 {
     connect(Process, SIGNAL(readyReadStandardOutput()), this, SLOT(onCommandReadyRead()));
     connect(&NetworkManager, SIGNAL(finished(QNetworkReply *)), this, SLOT(onRequestFinished(QNetworkReply *)));
+    CurrentRequest = -1;
 }
 
 void BItemRequestManager::updateAvailableAdresses()
@@ -22,12 +25,20 @@ void BItemRequestManager::updateAvailableAdresses()
 
 void BItemRequestManager::loadLocalWifi(BConnectedItem *item, INetworkRegistration* registration)
 {
-    QString argUrl = "?ssid="+registration->getLocalSSID()+"&pass="+registration->getLocalPassWord();
-    if(registration->getLocalType() == 1)
-        argUrl += "&wep=1";
-    qDebug()<<"request: "<<argUrl;
-    QNetworkRequest request(QUrl("http://"+item->ip().toString()+"/setting"+argUrl));
-    NetworkManager.get(request);
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::LoadLocalWifi;
+    r["SSID"] = registration->getLocalSSID();
+    r["psw"] = registration->getLocalPassWord();
+    r["type"] = registration->getLocalType();
+    Requests.append(r);
+    eval();
+}
+
+void BItemRequestManager::getValue(BConnectedItem *item)
+{
+    append(item, ProcessState::GetValue);
+
 }
 
 void BItemRequestManager::sendRequest(BConnectedItem *item, const QString &partialUrl)
@@ -38,11 +49,74 @@ void BItemRequestManager::sendRequest(BConnectedItem *item, const QString &parti
 
 void BItemRequestManager::updateFromItemId(BConnectedItem *item)
 {
-    qDebug()<<"requestID";
-    Item = item;
+    append(item, ProcessState::NetworkGetId);
+    append(item, ProcessState::ProcessPing);
+    append(item, ProcessState::ProcessArpA);
+    append(item, ProcessState::GetValue);
 
-    CmdState = ProcessState::NetworkGetId;
-    NetworkManager.get(QNetworkRequest("http://"+item->ip().toString()+"/id"));
+}
+
+void BItemRequestManager::append(BConnectedItem *item, ProcessState state)
+{
+    Request r;
+    r.Item = item;
+    r.State = state;
+    Requests.append(r);
+    eval();
+}
+
+void BItemRequestManager::eval()
+{
+    if(CurrentRequest >= 0 || Requests.size() == 0)
+        return;
+
+    CurrentRequest = 0;
+    qDebug()<<"eval : "<<Requests[CurrentRequest].State;
+    switch(Requests[CurrentRequest].State)
+    {
+        case ProcessState::NetworkGetId:
+            NetworkManager.get(QNetworkRequest("http://"+Requests[CurrentRequest].Item->ip().toString()+"/id"));
+            break;
+        case ProcessState::ProcessArpA:
+            Process->start("arp -a");
+            Process->waitForFinished(5000);
+            break;
+        case ProcessState::LoadLocalWifi:
+        {
+            QString argUrl = "?ssid="+Requests[CurrentRequest]["SSID"].toString()+"&pass="+Requests[CurrentRequest]["psw"].toString();
+            if(Requests[CurrentRequest]["SSID"].toInt() == 1)
+                argUrl += "&wep=1";
+            QNetworkRequest request(QUrl("http://"+Requests[CurrentRequest].Item->ip().toString()+"/setting"+argUrl));
+            NetworkManager.get(request);
+            break;
+        }
+        case ProcessState::GetValue:
+        {
+            QNetworkRequest r(QUrl("http://"+Requests[CurrentRequest].Item->ip().toString()+"/value"));
+            NetworkManager.get(r);
+            break;
+        }
+        case ProcessState::ProcessPing:
+            Process->start("ping "+Requests[CurrentRequest].Item->ip().toString()+" -n 1");
+            Process->waitForFinished(5000);
+            break;
+    }
+
+}
+
+void BItemRequestManager::finish(bool updateItem)
+{
+    if(CurrentRequest<0)
+        return;
+
+    qDebug()<<" finish "<<Requests[CurrentRequest].State;
+
+    if(updateItem)
+        emit itemUpdated(Requests[CurrentRequest].Item);
+
+    Requests.removeAt(CurrentRequest);
+    CurrentRequest = -1;
+    eval();
 }
 
 
@@ -51,12 +125,12 @@ void BItemRequestManager::lookedUpHost(QHostInfo info)
     QMutexLocker locker(&Mutex);
     AvailableLocalAdresses.insert(info.hostName(), info.addresses().first());
 
-    if(CmdState == ProcessState::LoadLocalWifi)
+    if(cmdState() == ProcessState::LoadLocalWifi)
     {
-        if(Item->name() == info.hostName())
+        if(Requests[CurrentRequest].Item->name() == info.hostName())
         {
-            Item->setIp(AvailableLocalAdresses[info.hostName()]);
-            CmdState = ProcessState::None;
+            Requests[CurrentRequest].Item->setIp(AvailableLocalAdresses[info.hostName()]);
+            finish();
         }
     }
 }
@@ -64,33 +138,33 @@ void BItemRequestManager::lookedUpHost(QHostInfo info)
 
 void BItemRequestManager::onCommandReadyRead()
 {
-    if(CmdState == ProcessState::ProcessArpA)
+    if(cmdState() == ProcessState::ProcessArpA)
     {
+        qDebug()<<"process arp  a";
         QByteArray res = Process->readAllStandardOutput();
         QList<QByteArray> lines = res.split('\n');
 
-        QRegExp regMac("([0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2})");
+        QRegExp regMac("([0-9a-f]{2}[:-][0-9a-f]{2}[:-][0-9a-f]{2}[:-][0-9a-f]{2}[:-][0-9a-f]{2}[:-][0-9a-f]{2})");
         for(int i=0;i<lines.size();i++)
         {
             qDebug()<<lines[i];
             QString workLine = QString(lines[i]);
             workLine = workLine.remove(" ");
-            if(workLine.contains(Item->ip().toString().toLatin1()))
+            if(workLine.contains(Requests[CurrentRequest].Item->ip().toString().toLatin1()))
             {
                 if(regMac.indexIn(workLine)>=0)
                 {
-                    Item->setMAC(regMac.cap(1));
-                    CmdState = ProcessState::None;
+                    Requests[CurrentRequest].Item->setMAC(regMac.cap(1));
                     break;
                 }
-
             }
         }
+        finish(true);
     }
-    else
+    else if(cmdState() == ProcessState::ProcessPing)
     {
-        QByteArray res = Process->readAllStandardOutput();
-        qDebug()<<res;
+        Process->waitForFinished(50);
+        finish(false);
     }
 }
 
@@ -102,7 +176,7 @@ void BItemRequestManager::onRequestFinished(QNetworkReply *reply)
 
     if(!rep.isEmpty())
     {
-        if(CmdState == ProcessState::NetworkGetId)
+        if(cmdState() == ProcessState::NetworkGetId)
         {
             QJsonParseError error;
 
@@ -112,38 +186,49 @@ void BItemRequestManager::onRequestFinished(QNetworkReply *reply)
 
          //   ElementsRegistered.remove(CurrentElementRegistration);
          //   ElementsRegistered.insert(name, item);
-            Item->setType(type);
+            Requests[CurrentRequest].Item->setType(type);
           //  CurrentElementRegistration = name;
 
-            Item->setName(name);
-
-
-            CmdState = ProcessState::ProcessPing;
-            Process->start("ping "+Item->ip().toString()+" -n 1");
-            Process->waitForFinished(5000);
-            CmdState = ProcessState::ProcessArpA;
-            Process->start("arp -a");
-            Process->waitForFinished(5000);
-            CmdState = ProcessState::None;
-
-            emit itemUpdated(Item);
-            Item = nullptr;
+            Requests[CurrentRequest].Item->setName(name);
+            finish(true);
         }
-        else if(CmdState == ProcessState::LoadLocalWifi)
+        else if(cmdState() == ProcessState::LoadLocalWifi)
         {
             QTimer::singleShot(3000, this, SLOT(searchIpForCurrentItem));
         }
+        else if(cmdState() == ProcessState::GetValue)
+        {
+            QJsonParseError error;
+            qDebug()<<"getValue";
+
+            QJsonDocument jDoc = QJsonDocument::fromJson(rep, &error);
+            if(jDoc["value"].isObject())
+            {
+                QStringList keys = jDoc["value"].toObject().keys();
+                for (int i=0;i<keys.size();i++)
+                {
+                    Requests[CurrentRequest].Item->setValue(keys[i], jDoc["value"][keys[i]].toVariant());
+                }
+                finish(keys.size()>0);
+            }
+        }
     }
 
-    CmdState = ProcessState::None;
 }
 
 void BItemRequestManager::searchIpForCurrentItem()
 {
-    if(CmdState == ProcessState::LoadLocalWifi)
+    if(cmdState() == ProcessState::LoadLocalWifi)
     {
         updateAvailableAdresses();
     }
+}
+
+ProcessState BItemRequestManager::cmdState()
+{
+    if(CurrentRequest>=0)
+        return Requests[CurrentRequest].State;
+    return ProcessState::None;
 }
 
 QHostInfoThread::QHostInfoThread(const QString& ip, BItemRequestManager *parent) : QThread (parent), Ip(ip)

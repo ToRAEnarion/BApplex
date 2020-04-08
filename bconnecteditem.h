@@ -13,6 +13,7 @@ public:
         Unkown = 0,
         Delete = 1,
         Edit = 2,
+        GetValue = 3,
         LoadLocalWifi = 10
     };
 
@@ -38,6 +39,10 @@ public:
     void setType(const QString &value);
 
     void setDescription(const QString &value);
+
+    void setValue(const QString& key, const QVariant &value);
+    QVariant operator[](const QString& key);
+    int valuesCount() const;
 public:
     static BConnectedItem* make(const QHostAddress& adresse);
 
@@ -50,6 +55,8 @@ private:
     QString MAC;
 
     QString Description;
+
+    QMap<QString, QVariant> Values;
 };
 
 #endif // BCONNECTEDITEM_H

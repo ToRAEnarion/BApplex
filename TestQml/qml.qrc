@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>cadran.png</file>
+        <file>BTimeSelecter.qml</file>
     </qresource>
 </RCC>

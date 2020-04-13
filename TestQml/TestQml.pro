@@ -31,4 +31,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 DISTFILES += \
     BTimeSelecter.qml \
     BTimeSelecterForm.ui.qml \
-    ClockCanvas.qml
+    ClockCanvas.qml \
+    main.qml

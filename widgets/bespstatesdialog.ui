@@ -16,23 +16,46 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Tab 1</string>
+       <string>Valeur 1</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="BTimeSelecterWidget" name="value1" native="true"/>
+       </item>
+      </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="Val2">
       <attribute name="title">
-       <string>Tab 2</string>
+       <string>Valeur 2</string>
       </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="BTimeSelecterWidget" name="value2" native="true"/>
+       </item>
+      </layout>
      </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="checkBox">
-     <property name="text">
-      <string>Value</string>
-     </property>
+     <widget class="QWidget" name="tab_3">
+      <attribute name="icon">
+       <iconset resource="../resources.qrc">
+        <normaloff>:/icons/BUG</normaloff>:/icons/BUG</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>DEBUG</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLineEdit" name="debug_v1"/>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="debug_v2"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -47,7 +70,17 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>BTimeSelecterWidget</class>
+   <extends>QWidget</extends>
+   <header>widgets/btimeselecterwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

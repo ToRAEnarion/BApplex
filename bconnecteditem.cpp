@@ -1,4 +1,9 @@
 #include "bconnecteditem.h"
+#include <QDataStream>
+
+BConnectedItem::BConnectedItem()
+{
+}
 
 BConnectedItem::BConnectedItem(const QString &name) : Name(name), Description("")
 {
@@ -107,4 +112,35 @@ void BConnectedItem::setName(const QString &value)
 QString BConnectedItem::password() const
 {
     return Password;
+}
+
+QDataStream &operator<<(QDataStream &out, const BConnectedItem &item)
+{
+    out << qint16(item.Version)
+        << item.Name
+        << item.Type
+        << item.Ip
+        << item.SSID
+        << item.Password
+        << item.MAC
+        << item.Description
+        << item.Values;
+
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, BConnectedItem &item)
+{
+    qint16 version;
+    in >> version;
+    in >> item.Name
+       >> item.Type
+       >> item.Ip
+       >> item.SSID
+       >> item.Password
+       >> item.MAC
+       >> item.Description
+       >> item.Values;
+
+    return in;
 }

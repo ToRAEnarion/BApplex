@@ -18,6 +18,7 @@
 #include "bconnectedtreeitem.h"
 #include "treemultibutton.h"
 #include "baddbyipdialog.h"
+#include <QDataStream>
 
 #include "widgets/btimerangeselectwidget.h"
 #include "widgets/bespstatesdialog.h"
@@ -39,6 +40,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->componentTreeView, SIGNAL(actionItem(BConnectedItem*, BConnectedItem::ActionType)), this, SLOT(onTreeActionPressed(BConnectedItem*, BConnectedItem::ActionType)));
 
     connect(RequestManager, SIGNAL(itemUpdated(BConnectedItem*)), this, SLOT(updateComponentsView()));
+
+
+    QByteArray serial = Settings.value("Items").toByteArray();
+    qDebug()<<"load "<<serial.size();
+    if(serial.size()>1)
+    {
+        QDataStream stream(serial);
+        qint32 s;
+        stream>>s;
+        for (int i=0;i<s;i++)
+        {
+            Items.append(new BConnectedItem());
+            stream>>*Items[i];
+        }
+    }
 
     ui->componentTreeView->resizeColumnToContents(3);
     ui->componentTreeView->resizeColumnToContents(4);
@@ -116,7 +132,7 @@ bool MainWindow::tryRegisterElement(const QString &name)
 void MainWindow::updateComponentsView()
 {
     ui->componentTreeView->clear();
-    foreach(BConnectedItem* elem, ElementsRegistered)
+    foreach(BConnectedItem* elem, Items)
     {
         BConnectedTreeItem* item = new BConnectedTreeItem(elem);
         ui->componentTreeView->addTopLevelItem(item);
@@ -132,7 +148,7 @@ void MainWindow::on_actionAddComponent_triggered()
     //    ui->label->setText(d.foundText());
         NetworkRegistration res = d.foundSSID();
         BConnectedItem* item = new BConnectedItem(res.SSID, res);
-        ElementsRegistered.append(item);
+        Items.append(item);
 
         RequestManager->updateFromItemId(item);
 
@@ -147,8 +163,8 @@ void MainWindow::on_actionAddIp_triggered()
     {
         QHostAddress ip = d.ip();
         BConnectedItem* item = BConnectedItem::make(ip);
-        CurrentElementRegistration = "TEMP_"+ElementsRegistered.count();
-        ElementsRegistered.append(item);
+        CurrentElementRegistration = "TEMP_"+Items.count();
+        Items.append(item);
 
         RequestManager->updateFromItemId(item);
         qDebug()<<"iso : "<<"http://"+ip.toString()+"/id";
@@ -191,7 +207,7 @@ void MainWindow::onTreeActionPressed(BConnectedItem *item, BConnectedItem::Actio
             RequestManager->loadLocalWifi(item, this);
             break;
         case BConnectedItem::Delete:
-            if(ElementsRegistered.removeOne(item))
+            if(Items.removeOne(item))
                 delete item;
 
             updateComponentsView();
@@ -223,4 +239,19 @@ void MainWindow::onNetworkConfigurationChanged(const QNetworkConfiguration &conf
     {
         tryRegisterElement(config.name());
     }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    QByteArray serial;
+    QDataStream stream(&serial, QIODevice::WriteOnly);
+    stream<<qint32(Items.size());
+    for (int i=0;i<Items.size();i++)
+    {
+        stream<<*Items[i];
+    }
+    Settings.setValue("Items", serial);
+
+    qDebug()<<"save";
+    QMainWindow::closeEvent(event);
 }

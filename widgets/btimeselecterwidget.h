@@ -17,6 +17,7 @@ public:
     ~BTimeSelecterWidget();
     void updateVisibility();
     QString stringValue();
+    void setValue(const QString str);
 
     static bool updateMethod(BConnectedItem* item);
 protected slots:

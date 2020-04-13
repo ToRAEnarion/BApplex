@@ -17,7 +17,8 @@ enum ProcessState
 
     NetworkGetId = 10,
     LoadLocalWifi = 11,
-    GetValue = 12
+    GetValue = 12,
+    SetValue = 13
 };
 
 class Request : public QMap<QString, QVariant>
@@ -36,7 +37,6 @@ public:
     void updateFromItemId(BConnectedItem* item);
 
     void append(BConnectedItem* item, ProcessState state);
-    void eval();
     void finish(bool updateItem = false);
 
     void updateAvailableAdresses();
@@ -45,6 +45,9 @@ public:
     void getValue(BConnectedItem* item);
 
     void sendRequest(BConnectedItem *item, const QString& partialUrl);
+    ~BItemRequestManager();
+public slots:
+    void eval();
 private slots:
     void lookedUpHost(QHostInfo info);
     void onCommandReadyRead();

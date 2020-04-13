@@ -15,7 +15,10 @@ class BEspStatesDialog : public QDialog
 public:
     explicit BEspStatesDialog(QWidget *parent = nullptr);
     ~BEspStatesDialog();
-    QString stringValue() const;
+    QString v1() const;
+    QString v2() const;
+    void setV1(const QString& str) ;
+    void setV2(const QString& str);
     static bool editMethod(BConnectedItem* item, QWidget* parent);
 
 private:

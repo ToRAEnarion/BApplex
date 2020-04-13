@@ -8,6 +8,13 @@
         <file alias="loadWifi">resources/includeWifi.png</file>
         <file alias="automatic">resources/automatic.png</file>
         <file alias="delete">resources/delete.png</file>
+        <file alias="addYellow">resources/add.png</file>
+        <file>resources/addIcon.png</file>
+        <file>resources/check.png</file>
+        <file>resources/lock.png</file>
+        <file>resources/lockAway.png</file>
+        <file>resources/period.png</file>
+        <file>resources/unlock.png</file>
     </qresource>
     <qresource prefix="/components">
         <file alias="ESP">resources/ESP8266.png</file>

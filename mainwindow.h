@@ -43,12 +43,14 @@ protected slots:
 
     void onTreeActionPressed(BConnectedItem* item, BConnectedItem::ActionType a);
     void onNetworkConfigurationChanged(const QNetworkConfiguration &config);
+protected:
+    void closeEvent(QCloseEvent *event);
 private:
     Ui::MainWindow *ui;
     QNetworkConfigurationManager ConfigManager;
     BItemRequestManager* RequestManager;
     QString CurrentElementRegistration;
-    QList<BConnectedItem*> ElementsRegistered;
+    QList<BConnectedItem*> Items;
     QSettings Settings;
 };
 

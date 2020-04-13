@@ -18,6 +18,7 @@ public:
     };
 
 public:
+    BConnectedItem();
     BConnectedItem(const QString& name);
     BConnectedItem(const QString& name, const NetworkRegistration& reg);
     QString name() const;
@@ -43,6 +44,9 @@ public:
     void setValue(const QString& key, const QVariant &value);
     QVariant operator[](const QString& key);
     int valuesCount() const;
+
+    const int Version = 0;
+
 public:
     static BConnectedItem* make(const QHostAddress& adresse);
 
@@ -57,6 +61,14 @@ private:
     QString Description;
 
     QMap<QString, QVariant> Values;
+
+
+    friend QDataStream &operator<<(QDataStream &out, const BConnectedItem &item);
+    friend QDataStream &operator>>(QDataStream &in, BConnectedItem &item);
 };
+
+
+QDataStream &operator<<(QDataStream &out, const BConnectedItem &item);
+QDataStream &operator>>(QDataStream &in, BConnectedItem &item);
 
 #endif // BCONNECTEDITEM_H

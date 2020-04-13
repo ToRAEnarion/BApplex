@@ -43,8 +43,17 @@ void BItemRequestManager::getValue(BConnectedItem *item)
 
 void BItemRequestManager::sendRequest(BConnectedItem *item, const QString &partialUrl)
 {
-    QNetworkRequest request(QUrl("http://"+item->ip().toString()+"/"+partialUrl));
-    NetworkManager.get(request);
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::SetValue;
+    r["url"] = partialUrl;
+    Requests.append(r);
+    eval();
+}
+
+BItemRequestManager::~BItemRequestManager()
+{
+    Process->kill();
 }
 
 void BItemRequestManager::updateFromItemId(BConnectedItem *item)
@@ -79,7 +88,9 @@ void BItemRequestManager::eval()
             break;
         case ProcessState::ProcessArpA:
             Process->start("arp -a");
+            Process->waitForStarted(5000);
             Process->waitForFinished(5000);
+            Process->terminate();
             break;
         case ProcessState::LoadLocalWifi:
         {
@@ -96,9 +107,18 @@ void BItemRequestManager::eval()
             NetworkManager.get(r);
             break;
         }
+        case ProcessState::SetValue:
+        {
+            qDebug()<<"sendValue";
+            QNetworkRequest r(QUrl("http://"+Requests[CurrentRequest].Item->ip().toString()+"/"+Requests[CurrentRequest]["url"].toString()));
+            NetworkManager.get(r);
+            break;
+        }
         case ProcessState::ProcessPing:
             Process->start("ping "+Requests[CurrentRequest].Item->ip().toString()+" -n 1");
+            Process->waitForStarted(5000);
             Process->waitForFinished(5000);
+            Process->kill();
             break;
     }
 
@@ -159,11 +179,19 @@ void BItemRequestManager::onCommandReadyRead()
                 }
             }
         }
+        Process->waitForFinished(500);
+        Process->waitForReadyRead(500);
+        Process->kill();
+        Process->waitForFinished(500);
         finish(true);
     }
     else if(cmdState() == ProcessState::ProcessPing)
     {
-        Process->waitForFinished(50);
+        Process->waitForFinished(500);
+        Process->waitForReadyRead(500);
+        Process->kill();
+        Process->waitForFinished(500);
+   //     while (Process->state() == QProcess::Running){qDebug()<<"in";}
         finish(false);
     }
 }
@@ -196,7 +224,7 @@ void BItemRequestManager::onRequestFinished(QNetworkReply *reply)
         {
             QTimer::singleShot(3000, this, SLOT(searchIpForCurrentItem));
         }
-        else if(cmdState() == ProcessState::GetValue)
+        else if(cmdState() == ProcessState::GetValue || cmdState() == ProcessState::SetValue)
         {
             QJsonParseError error;
             qDebug()<<"getValue";

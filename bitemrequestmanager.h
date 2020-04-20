@@ -14,11 +14,18 @@ enum ProcessState
     None =0,
     ProcessPing = 1,
     ProcessArpA = 2,
+    AddWLanProfile = 3,
+    ChangeNetworkWlan = 4,
+    Wait = 5,
 
-    NetworkGetId = 10,
-    LoadLocalWifi = 11,
-    GetValue = 12,
-    SetValue = 13
+    NetworkPing = 10,
+    NetworkGetId = 11,
+    LoadLocalWifi = 12,
+    GetValue = 13,
+    SetValue = 14,
+
+
+    SearchCorrectIp = 22
 };
 
 class Request : public QMap<QString, QVariant>
@@ -38,14 +45,24 @@ public:
 
     void append(BConnectedItem* item, ProcessState state);
     void finish(bool updateItem = false);
+    void abort(BConnectedItem* item);
 
     void updateAvailableAdresses();
     void loadLocalWifi(BConnectedItem* item, INetworkRegistration *registration);
+    void addWlanProfile(BConnectedItem *item, const INetworkRegistration* network);
+    void changeWlan(BConnectedItem *item, const INetworkRegistration *network);
+
+    void ping(BConnectedItem* item, bool disable = true);
+    void pingRepeat(BConnectedItem *item, int n);
+
+    void wait(BConnectedItem *item, int n);
 
     void getValue(BConnectedItem* item);
 
     void sendRequest(BConnectedItem *item, const QString& partialUrl);
     ~BItemRequestManager();
+
+    void stackLoadLocalWifi(BConnectedItem* item, INetworkRegistration *registration);
 public slots:
     void eval();
 private slots:
@@ -53,6 +70,8 @@ private slots:
     void onCommandReadyRead();
     void onRequestFinished(QNetworkReply *reply);
     void searchIpForCurrentItem();
+    void pingCurrentItem();
+    void waited();
 
 signals:
     void itemUpdated(BConnectedItem*);

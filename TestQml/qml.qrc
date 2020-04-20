@@ -4,5 +4,12 @@
         <file>qtquickcontrols2.conf</file>
         <file>cadran.png</file>
         <file>BTimeSelecter.qml</file>
+        <file>BTimeSelecterForm.ui.qml</file>
+        <file>ClockCanvas.qml</file>
+        <file>invertblue.png</file>
+        <file>TumblerTime.qml</file>
+        <file>ConnectedItemToolBar.qml</file>
+        <file>previous.png</file>
+        <file>menu.png</file>
     </qresource>
 </RCC>

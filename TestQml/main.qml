@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.5
-import "BTimeSelecter.qml"
 
 ApplicationWindow {
     visible: true
@@ -8,10 +7,12 @@ ApplicationWindow {
     height: 480
     title: qsTr("Scroll")
 
-    Loader{
-        source: "../BTimeSelecter.qml";
+    BTimeSelecterForm
+    {
+        anchors.fill: parent
     }
 
+/*
     ScrollView {
         anchors.fill: parent
 
@@ -23,5 +24,5 @@ ApplicationWindow {
                 width: parent.width
             }
         }
-    }
+    }*/
 }

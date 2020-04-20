@@ -34,6 +34,7 @@ void BConnectedTreeItem::updateNode()
     setText(1, QString("(%1)").arg(Item->valuesCount()));
     setText(2, Item->ip().toString());
     setText(3, Item->mac());
+    setBackgroundColor(0, item()->enable() ? Qt::white : Qt::gray);
 
     if(!Item->type().isEmpty() && QFile::exists(":/components/"+Item->type()))
     {

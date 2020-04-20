@@ -15,9 +15,13 @@
         <file>resources/lockAway.png</file>
         <file>resources/period.png</file>
         <file>resources/unlock.png</file>
+        <file alias="update">resources/refresh.png</file>
     </qresource>
     <qresource prefix="/components">
         <file alias="ESP">resources/ESP8266.png</file>
         <file alias="unknown">resources/unknown.png</file>
+    </qresource>
+    <qresource prefix="/files">
+        <file alias="emptySSID">resources/emptySSID.xml</file>
     </qresource>
 </RCC>

@@ -9,10 +9,12 @@ TreePushButton::TreePushButton(BConnectedTreeItem *item) : QWidget(), Item(item)
     setLayout(new QHBoxLayout());
     layout()->setMargin(0);
 
-    addActionButton(QIcon(":/icons/loadWifi"), "Load Wifi", BConnectedItem::LoadLocalWifi);
+    addActionButton(QIcon(":/icons/loadWifi"), tr("Load Wifi"), BConnectedItem::LoadLocalWifi);
 
+    addActionButton(QIcon(":/icons/update"), tr("Update"), BConnectedItem::Update);
     ((QHBoxLayout*)layout())->addStretch();
-    addActionButton(QIcon(":/icons/delete"), "Supprimer", BConnectedItem::Delete);
+
+    addActionButton(QIcon(":/icons/delete"), tr("Supprimer"), BConnectedItem::Delete);
 
     updateButtons();
 }

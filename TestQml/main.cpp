@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -8,6 +9,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+    qDebug()<<QStringLiteral("qrc:/main.qml");
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

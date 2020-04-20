@@ -5,7 +5,7 @@
 #include "struct.h"
 #include <QHostAddress>
 
-class BConnectedItem
+class BConnectedItem : public INetworkRegistration
 {
 public:
     enum ActionType
@@ -14,6 +14,7 @@ public:
         Delete = 1,
         Edit = 2,
         GetValue = 3,
+        Update = 4,
         LoadLocalWifi = 10
     };
 
@@ -24,12 +25,17 @@ public:
     QString name() const;
     QString password() const;
 
+    QString getLocalSSID() const;
+    QString getLocalPassWord() const;
+    int getLocalType() const;
+
     QString ssid() const;
-    QString mac() const;    
+    QString mac() const;
     QString type() const;
 
     QString description() const;
 
+    bool enable() const;
     QHostAddress ip() const;
 
     QSet<BConnectedItem::ActionType> getActions();
@@ -40,6 +46,7 @@ public:
     void setType(const QString &value);
 
     void setDescription(const QString &value);
+    void setEnable(bool b);
 
     void setValue(const QString& key, const QVariant &value);
     QVariant operator[](const QString& key);
@@ -57,6 +64,8 @@ private:
     QString SSID;
     QString Password;
     QString MAC;
+
+    bool Enabled;
 
     QString Description;
 

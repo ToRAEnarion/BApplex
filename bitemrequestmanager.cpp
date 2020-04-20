@@ -3,6 +3,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QTimer>
+#include <QFile>
+#include <QDir>
 
 
 BItemRequestManager::BItemRequestManager(QObject* parent) : QObject(parent),
@@ -15,10 +17,12 @@ BItemRequestManager::BItemRequestManager(QObject* parent) : QObject(parent),
 
 void BItemRequestManager::updateAvailableAdresses()
 {
+    qDebug()<<"startsearching";
     AvailableLocalAdresses.clear();
     for(int i=0;i<200;i++)
     {
         QHostInfoThread* th = new QHostInfoThread(QString("192.168.1.%1").arg(i));
+        connect(th, SIGNAL(lookedUpHost(QHostInfo)), this, SLOT(lookedUpHost(QHostInfo)));
         th->start();
     }
 }
@@ -32,13 +36,58 @@ void BItemRequestManager::loadLocalWifi(BConnectedItem *item, INetworkRegistrati
     r["psw"] = registration->getLocalPassWord();
     r["type"] = registration->getLocalType();
     Requests.append(r);
-    eval();
+}
+
+void BItemRequestManager::addWlanProfile(BConnectedItem *item, const INetworkRegistration *network)
+{
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::AddWLanProfile;
+    r["SSID"] = network->getLocalSSID();
+    r["psw"] = network->getLocalPassWord();
+    r["type"] = network->getLocalType();
+    Requests.append(r);
+}
+
+void BItemRequestManager::changeWlan(BConnectedItem *item, const INetworkRegistration *network)
+{
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::ChangeNetworkWlan;
+    r["SSID"] = network->getLocalSSID();
+    r["psw"] = network->getLocalPassWord();
+    r["type"] = network->getLocalType();
+    Requests.append(r);
+}
+
+void BItemRequestManager::ping(BConnectedItem *item, bool disable)
+{
+    if(disable)
+        item->setEnable(false);
+    append(item, ProcessState::NetworkPing);
+}
+void BItemRequestManager::pingRepeat(BConnectedItem *item, int n)
+{
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::NetworkPing;
+    r["n"] = n;
+    Requests.append(r);
+}
+
+void BItemRequestManager::wait(BConnectedItem *item, int n)
+{
+    Request r;
+    r.Item = item;
+    r.State = ProcessState::Wait;
+    r["t"] = n;
+    Requests.append(r);
+
 }
 
 void BItemRequestManager::getValue(BConnectedItem *item)
 {
     append(item, ProcessState::GetValue);
-
 }
 
 void BItemRequestManager::sendRequest(BConnectedItem *item, const QString &partialUrl)
@@ -56,13 +105,24 @@ BItemRequestManager::~BItemRequestManager()
     Process->kill();
 }
 
+void BItemRequestManager::stackLoadLocalWifi(BConnectedItem *item, INetworkRegistration *registration)
+{    
+    changeWlan(item, item);
+    pingRepeat(item, 6);
+    updateFromItemId(item);
+    loadLocalWifi(item, registration);
+    changeWlan(item, registration);
+    wait(item, 8000);
+    append(item, ProcessState::SearchCorrectIp);
+//      RequestManager->updateAvailableAdresses()
+    getValue(item);
+}
+
 void BItemRequestManager::updateFromItemId(BConnectedItem *item)
 {
     append(item, ProcessState::NetworkGetId);
     append(item, ProcessState::ProcessPing);
     append(item, ProcessState::ProcessArpA);
-    append(item, ProcessState::GetValue);
-
 }
 
 void BItemRequestManager::append(BConnectedItem *item, ProcessState state)
@@ -71,7 +131,6 @@ void BItemRequestManager::append(BConnectedItem *item, ProcessState state)
     r.Item = item;
     r.State = state;
     Requests.append(r);
-    eval();
 }
 
 void BItemRequestManager::eval()
@@ -98,7 +157,13 @@ void BItemRequestManager::eval()
             if(Requests[CurrentRequest]["SSID"].toInt() == 1)
                 argUrl += "&wep=1";
             QNetworkRequest request(QUrl("http://"+Requests[CurrentRequest].Item->ip().toString()+"/setting"+argUrl));
-            NetworkManager.get(request);
+            QNetworkReply* r= NetworkManager.get(request);
+            r->waitForReadyRead(5000);
+            break;
+        }
+        case ProcessState::NetworkPing:
+        {
+            pingCurrentItem();
             break;
         }
         case ProcessState::GetValue:
@@ -120,8 +185,69 @@ void BItemRequestManager::eval()
             Process->waitForFinished(5000);
             Process->kill();
             break;
+        case ProcessState::ChangeNetworkWlan:
+        {
+            qDebug()<<"change to wlan "<<Requests[CurrentRequest]["SSID"];
+            Process->start("netsh wlan connect name=\""+Requests[CurrentRequest]["SSID"].toByteArray()+"\"");
+            Process->waitForStarted(5000);
+            Process->waitForFinished(5000);
+            Process->kill();
+            break;
+        }
+        case ProcessState::AddWLanProfile:
+        {
+            QByteArray ssid = Requests[CurrentRequest]["SSID"].toByteArray();
+            QByteArray hex;
+
+            for(int i=0;i<ssid.size();i++)
+            {
+                hex += QString::number((char)ssid[i],16);
+            }
+
+            qDebug()<<"add profile netsh";
+
+            QFile source(":/files/emptySSID");
+            source.open(QIODevice::ReadOnly);
+            QByteArray sourceData = source.readAll();
+            sourceData.replace("{SSID}", Requests[CurrentRequest]["SSID"].toByteArray());
+            sourceData.replace("{PSW}", Requests[CurrentRequest]["psw"].toByteArray());
+            sourceData.replace("{HEX_SSID}", hex);
+            QFile t(ssid + "temp.xml");
+            t.open(QIODevice::WriteOnly);
+            QTextStream stream(&t);
+            stream<<sourceData;
+            t.close();
+            QFileInfo info(t.fileName());
+
+            qDebug()<<"netsh wlan add profile filename=\""+QDir::toNativeSeparators(info.absoluteFilePath())+"\" user=all";
+            Process->start("netsh wlan add profile filename=\""+QDir::toNativeSeparators(info.absoluteFilePath())+"\" user=all");
+            Process->waitForStarted(5000);
+            Process->waitForFinished(5000);
+            Process->kill();
+            QDir d;
+            d.remove(t.fileName());
+            break;
+        }
+        case ProcessState::SearchCorrectIp:
+        {
+            updateAvailableAdresses();
+            break;
+        }
+        case ProcessState::Wait:
+        {
+            int n = Requests[CurrentRequest]["t"].toInt();
+            QTimer::singleShot(n, this, SLOT(waited()));
+        }
     }
 
+    if(CurrentRequest<0)
+        eval();
+}
+
+void BItemRequestManager::waited()
+{
+    qDebug()<<"finish waited";
+    finish(false);
 }
 
 void BItemRequestManager::finish(bool updateItem)
@@ -139,13 +265,34 @@ void BItemRequestManager::finish(bool updateItem)
     eval();
 }
 
+void BItemRequestManager::abort(BConnectedItem *item)
+{
+    int i=0;
+    while(i<Requests.size())
+    {
+        if(Requests[i].Item == item)
+        {
+            Requests.removeAt(i);
+            if(CurrentRequest == i)
+                CurrentRequest = -1;
+            else if(CurrentRequest>i)
+                CurrentRequest--;
+        }
+        else
+        {
+            i++;
+        }
+    }
+}
+
 
 void BItemRequestManager::lookedUpHost(QHostInfo info)
 {
     QMutexLocker locker(&Mutex);
     AvailableLocalAdresses.insert(info.hostName(), info.addresses().first());
 
-    if(cmdState() == ProcessState::LoadLocalWifi)
+    qDebug()<<"ending "<<cmdState();
+    if(cmdState() == ProcessState::SearchCorrectIp)
     {
         if(Requests[CurrentRequest].Item->name() == info.hostName())
         {
@@ -194,6 +341,29 @@ void BItemRequestManager::onCommandReadyRead()
    //     while (Process->state() == QProcess::Running){qDebug()<<"in";}
         finish(false);
     }
+    else if(cmdState() == ProcessState::AddWLanProfile)
+    {
+
+        QByteArray res = Process->readAllStandardOutput();
+        qDebug()<<res;
+        Process->waitForFinished(500);
+        Process->waitForReadyRead(500);
+        Process->kill();
+        Process->waitForFinished(500);
+   //     while (Process->state() == QProcess::Running){qDebug()<<"in";}
+        finish(false);
+    }
+    else if(cmdState() == ProcessState::ChangeNetworkWlan)
+    {
+
+        QByteArray res = Process->readAllStandardOutput();
+        qDebug()<<res;
+        Process->waitForFinished(500);
+        Process->waitForReadyRead(500);
+        Process->kill();
+        Process->waitForFinished(500);
+        finish(false);
+    }
 }
 
 
@@ -222,12 +392,16 @@ void BItemRequestManager::onRequestFinished(QNetworkReply *reply)
         }
         else if(cmdState() == ProcessState::LoadLocalWifi)
         {
-            QTimer::singleShot(3000, this, SLOT(searchIpForCurrentItem));
+            finish(true);
+        }
+        else if(cmdState() == ProcessState::NetworkPing)
+        {
+            Requests[CurrentRequest].Item->setEnable(true);
+            Requests[CurrentRequest]["n"] = 0;
         }
         else if(cmdState() == ProcessState::GetValue || cmdState() == ProcessState::SetValue)
         {
             QJsonParseError error;
-            qDebug()<<"getValue";
 
             QJsonDocument jDoc = QJsonDocument::fromJson(rep, &error);
             if(jDoc["value"].isObject())
@@ -242,14 +416,43 @@ void BItemRequestManager::onRequestFinished(QNetworkReply *reply)
         }
     }
 
+    if(cmdState() == ProcessState::NetworkPing)
+    {
+        int n = 0;
+        if(Requests[CurrentRequest].contains("n"))
+        {
+            n = Requests[CurrentRequest]["n"].toInt();
+            if(n>0)
+            {
+                n--;
+                Requests[CurrentRequest]["n"] = n;
+                QTimer::singleShot(2000, this, SLOT(pingCurrentItem()));
+            }
+        }
+
+        if(n<=0)
+            finish(true);
+    }
+
 }
 
 void BItemRequestManager::searchIpForCurrentItem()
 {
-    if(cmdState() == ProcessState::LoadLocalWifi)
+    if(cmdState() == ProcessState::SearchCorrectIp)
     {
+        qDebug()<<"startsearching";
         updateAvailableAdresses();
     }
+}
+
+void BItemRequestManager::pingCurrentItem()
+{
+    if(CurrentRequest<0)
+        return;
+
+    QNetworkRequest r(QUrl("http://"+Requests[CurrentRequest].Item->ip().toString()+"/ping"));
+    NetworkManager.get(r);
+    qDebug()<<"network ping";
 }
 
 ProcessState BItemRequestManager::cmdState()

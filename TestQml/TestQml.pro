@@ -32,4 +32,6 @@ DISTFILES += \
     BTimeSelecter.qml \
     BTimeSelecterForm.ui.qml \
     ClockCanvas.qml \
+    ConnectedItemToolBar.qml \
+    TumblerTime.qml \
     main.qml

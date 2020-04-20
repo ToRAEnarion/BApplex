@@ -43,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     QByteArray serial = Settings.value("Items").toByteArray();
-    qDebug()<<"load "<<serial.size();
     if(serial.size()>1)
     {
         QDataStream stream(serial);
@@ -59,8 +58,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->componentTreeView->resizeColumnToContents(3);
     ui->componentTreeView->resizeColumnToContents(4);
 
+    for(int i=0;i<Items.size();i++)
+    {
+        RequestManager->ping(Items[i]);
+    }
+    RequestManager->eval();
  //   ui->componentTreeView->setItemDelegateForColumn(4, new TreeMultiButton(this));
     updateComponentsView();
+
 }
 
 MainWindow::~MainWindow()
@@ -150,7 +155,8 @@ void MainWindow::on_actionAddComponent_triggered()
         BConnectedItem* item = new BConnectedItem(res.SSID, res);
         Items.append(item);
 
-        RequestManager->updateFromItemId(item);
+   //     RequestManager->updateFromItemId(item);
+        RequestManager->addWlanProfile(item, &res);
 
         updateComponentsView();
     }
@@ -204,9 +210,12 @@ void MainWindow::onTreeActionPressed(BConnectedItem *item, BConnectedItem::Actio
     switch(a)
     {
         case BConnectedItem::LoadLocalWifi:
-            RequestManager->loadLocalWifi(item, this);
+            RequestManager->stackLoadLocalWifi(item, this);
+            RequestManager->eval();
+
             break;
         case BConnectedItem::Delete:
+            RequestManager->abort(item);
             if(Items.removeOne(item))
                 delete item;
 
@@ -252,6 +261,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     Settings.setValue("Items", serial);
 
-    qDebug()<<"save";
     QMainWindow::closeEvent(event);
 }
